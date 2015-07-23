@@ -19,3 +19,6 @@ plot(napsDF$`am nap length`~ napsDF$Date,
      main="AM/PM Nap Lengths")
 lines(napsDF$`pm nap length` ~ napsDF$Date, col="green")
 legend("topright",legend=c("AM nap length", "PM nap length"), col=c("blue","green"), pch="_")
+
+dev.copy(png, "naplengths.png", width=500, height=500)
+dev.off()
