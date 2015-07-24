@@ -1,6 +1,6 @@
 # README for Daycare Naps Data
 
-## What is this?
+## Origin of the data
 
 This data set is pulled from the website Daily Childcare Report, a site that works with daycares to post reports on feeding, sleeping, and other various activities. The site is password protected for privacy, so this data can only be obtained by the family of a child.
 
@@ -17,7 +17,7 @@ Obtaining data requires:
 
 ## How to use the scraper
 
-When navigating to the All Reports section of the site, execute the following scraper after scrolling through all the reports (the content loads dynamically as you move down the page).
+The scraper below should be imported into OutWit Hub as an XML file. Once it is installed you can execute it on any page. This particular scraper, however, will only gather data in the All Reports section of Daily Childcare Reports. You must execute the scraper after scrolling through all the reports (the content loads dynamically as you move down the page).
 
 ```{r}
 <outwitAutomator>
@@ -62,4 +62,22 @@ When navigating to the All Reports section of the site, execute the following sc
 </data>
 </outwitAutomator>
 ```
+The output of the scraper includes columns for id and source_url. I remove these before exporting to CSV. There is no harm in including them, but you'll have to remove them with R if you don't find them useful. The CSV is saved as OutWit\/scraped\/export.csv.
 
+## Getting tidy data from the OutWit Hub data
+
+The __cleaning_script.R__ creates a tidy data set from the OutWit Hub CSV.
+
+More to come...
+
+## Areas of improvement
+
+The complicated method of pulling data is a weak aspect of this script as it:
+
+* Limits access to data to members of a closed site.
+* Requires access to software other than R.
+* Free version of OutWit Hub restricts scraped content to 100 results.
+
+More issues
+
+* The __cleaning_script.R__ does not check for the data then download if it doesn't exist (see above). Potential solution is to host the data somewhere then update it frequently. But does anyone else care about _my kid's_ naps?
