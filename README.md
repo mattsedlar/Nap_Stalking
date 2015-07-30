@@ -38,7 +38,7 @@ reports2 <- GET(handle=pg,path="/minors/ID/all_reports?page=2")
 
 The __scrape.R__ script parses the content for each report identified in the __access.R__ (some modification necessary), converts each to a data frame, then binds them together.
 
-There's a little bit of cleaning before it gets to the __cleaning_script.R__ script because the parsed content is difficult to read. Finally it gets written to a csv file in the data folder.
+There's a little bit of cleaning before it gets to the __cleaning_script.R__ script because I wanted to use write.csv at the end and have it semi-presentable. __cleaning_script.R__ was written before all of this and reads that csv, originally output from a scraper I built for OutWit Hub.
 
 ## Getting tidy data from the OutWit Hub data
 
@@ -52,12 +52,12 @@ More to come...
 
 The day is broken into three groups: morning, midday, and afternoon. Morning is any time between 7 a.m. and 10 a.m. Midday is between 10 p.m. and 1 p.m. Afternoon is between 1 p.m. and 4 p.m. 
 
-*__morningstart__: Start of morning nap.
-*__morningend__: End of morning nap.
-*__middaystart__: Start of midday nap.
-*__middayend__: End of midday nap.
-*__afternoonstart__: Start of afternoon nap.
-*__afternoonend__: End of afternoon nap.
+* __morningstart__: Start of morning nap.
+* __morningend__: End of morning nap.
+* __middaystart__: Start of midday nap.
+* __middayend__: End of midday nap.
+* __afternoonstart__: Start of afternoon nap.
+* __afternoonend__: End of afternoon nap.
 
 ## Areas of improvement
 
