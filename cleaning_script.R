@@ -1,40 +1,39 @@
-library(dplyr)
+source("scrape.R")
+
 library(tidyr)
 
-data <- read.csv("OutWit scraped export.csv", stringsAsFactors = FALSE, na.strings="")
-## getting rid of the dates with no values
-df <- data[complete.cases(data),]
+df <- read.csv("./data/naps.csv", stringsAsFactors = FALSE, na.strings="")
 
 ## finding the unique character lengths for each record in the Sleep variable
-lengths <- c(19,39,59)
+lengths <- c(19,40,61)
 
 ## looping through the column to add NAs so we can split into multiple columns
 x <- 1
 
-while (x <= length(df$Sleep) ) {
+while (x <= length(df$sleeps) ) {
   
-  temp_var <- extract_numeric(substr(df$Sleep[x],1,2))
+  temp_var <- extract_numeric(substr(df$sleeps[x],1,2))
   
-  if (nchar(df$Sleep[x]) == lengths[2]) { 
+  if (nchar(df$sleeps[x]) == lengths[2]) { 
     
     ## fix early naps, naps that sneak into morning column
     if (temp_var == 8){
-      df$Sleep[x] <- paste(df$Sleep[x],"; NA - NA")
+      df$sleeps[x] <- paste(df$sleeps[x],"; NA - NA")
     }
 
     else {
-      df$Sleep[x] <- paste("NA - NA;",df$Sleep[x])
+      df$sleeps[x] <- paste("NA - NA;",df$sleeps[x])
     }
   }
   
-  else if (nchar(df$Sleep[x]) == lengths[1]) { 
+  else if (nchar(df$sleeps[x]) == lengths[1]) { 
     # fix afternoon naps that sneak into the morning column
     if (temp_var < 5) {
-      df$Sleep[x] <- paste("NA - NA; NA - NA;", df$Sleep[x])
+      df$sleeps[x] <- paste("NA - NA; NA - NA;", df$sleeps[x])
     }
     
     else {
-      df$Sleep[x] <- paste("NA - NA;",df$Sleep[x],"; NA - NA")
+      df$sleeps[x] <- paste("NA - NA;",df$sleeps[x],"; NA - NA")
     }
   }
   
@@ -43,17 +42,15 @@ while (x <= length(df$Sleep) ) {
 
 ## First round of splitting into three columns, representing early naps,
 ## morning naps, and afternoon naps
-splitDF <- df %>% separate(Sleep,c("early","morning","afternoon"), sep=";")
+splitDF <- df %>% separate(sleeps,c("morning","midday","afternoon"), sep=";")
 
 ## Second round of splitting into start and end times
-splitDF <- splitDF %>% separate(early,c("early start","early end"), sep="-", drop=TRUE)
-splitDF <- splitDF %>% separate(morning,c("morning start","morning end"), sep="-", drop=TRUE)
-splitDF <- splitDF %>% separate(afternoon,c("afternoon start","afternoon end"), sep="-", drop=TRUE)
+splitDF <- splitDF %>% separate(morning,c("morningstart","morningend"), sep="-", drop=TRUE)
+splitDF <- splitDF %>% separate(midday,c("middaystart","middayend"), sep="-", drop=TRUE)
+splitDF <- splitDF %>% separate(afternoon,c("afternoonstart","afternoonend"), sep="-", drop=TRUE)
 
-## fix the whitespace in the Date column
-splitDF$Date <- gsub(" ","", splitDF$Date, fixed=TRUE)
 ## convert column to Date class
-splitDF$Date <- as.Date(splitDF$Date, format="%Y-%m-%d")
+splitDF$dates <- as.Date(splitDF$dates, format="%Y-%m-%d")
 
 dfnames <- names(splitDF)
 dfnames <- dfnames[-1]
@@ -76,7 +73,7 @@ bad_variables <- function(column) {
   column
 }
 
-splitDF$`morning end` <- bad_variables(splitDF$`morning end`)
+splitDF$`middayend` <- bad_variables(splitDF$`middayend`)
 
 # This sets up the dates for POSIX conversion 
 
@@ -85,27 +82,31 @@ pconversion <- function (df,column) {
   z <- 1
   while (z <= length(column)) {
     if (!is.na(column[z])){
-      column[z] <- format(paste(df$Date[z], column[z], sep=''))
+      column[z] <- format(paste(df$dates[z], column[z], sep=''))
     }
-    else { column[z] = format(paste(df$Date[z], "00:00:00", sep=' ')) }
+    else { column[z] = format(paste(df$dates[z], "00:00:00", sep=' ')) }
     z <- z + 1
   }
   column
 }
 
-splitDF$`early start` <- pconversion(splitDF,splitDF$`early start`)
-splitDF$`early end` <- pconversion(splitDF,splitDF$`early end`)
-splitDF$`morning start` <- pconversion(splitDF,splitDF$`morning start`)
-splitDF$`morning end` <- pconversion(splitDF,splitDF$`morning end`)
-splitDF$`afternoon start` <- pconversion(splitDF,splitDF$`afternoon start`)
-splitDF$`afternoon end` <- pconversion(splitDF,splitDF$`afternoon end`)
+splitDF$`morningstart` <- pconversion(splitDF,splitDF$`morningstart`)
+splitDF$`morningend` <- pconversion(splitDF,splitDF$`morningend`)
+splitDF$`middaystart` <- pconversion(splitDF,splitDF$`middaystart`)
+splitDF$`middayend` <- pconversion(splitDF,splitDF$`middayend`)
+splitDF$`afternoonstart` <- pconversion(splitDF,splitDF$`afternoonstart`)
+splitDF$`afternoonend` <- pconversion(splitDF,splitDF$`afternoonend`)
 
 ## convert to POSIX
 
 ## AM
-splitDF <- splitDF %>% mutate(`morning start` = as.POSIXct(`morning start`)) %>% 
-                       mutate(`morning end` = as.POSIXct(`morning end`))
+splitDF <- splitDF %>% mutate(`middaystart` = as.POSIXct(`middaystart`)) %>% 
+                       mutate(`middayend` = as.POSIXct(`middayend`))
 
 ## PM
-splitDF <- splitDF %>% mutate(`afternoon start` = as.POSIXct(`afternoon start`)) %>% 
-                       mutate(`afternoon end` = as.POSIXct(`afternoon end`))
+splitDF <- splitDF %>% mutate(`afternoonstart` = as.POSIXct(`afternoonstart`)) %>% 
+                       mutate(`afternoonend` = as.POSIXct(`afternoonend`))
+
+# tidydata
+
+tidydf <- splitDF

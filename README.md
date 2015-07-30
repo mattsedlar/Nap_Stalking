@@ -9,60 +9,36 @@ This data set is pulled from the website Daily Childcare Report, a site that wor
 Obtaining data requires:
 
 * Access to Daily Childcare Report
-* OutWit Hub (v. 4.1.1.4)
-* OutWit Hub scraper for extracting information (see below)
 * R (v. 3.2.0)
+
+The following R packages.
+
 * dplyr (v. 0.4.2)
 * tidyr (v. 0.2.0)
+* httr (v. 1.0.0)
+* XML (v. 3.98.1.3)
 
-## How to use the scraper
+## Scraping the data
 
-The scraper below should be imported into OutWit Hub as an XML file. Once it is installed you can execute it on any page. This particular scraper, however, will only gather data in the All Reports section of Daily Childcare Reports. You must execute the scraper after scrolling through all the reports (the content loads dynamically as you move down the page).
+The data is obtained using the __access.R__ and __scrape.R__ scripts. __access.R__ loads the httr package and uses the GET function to open the site and authenticate access. You'll have to copy the script below and create your own version since I'm obviously not posting my access information here. Replace the __USERNAME__ and __PASSWORD__ with your own.
 
 ```{r}
-<outwitAutomator>
-<documentproperties>
-<active>true</active>
-<url>https://www.dailychildcarereport.com</url>
-<masterId>{bfbf44b5-0d71-41f9-9fdb-d54daed18dc0}</masterId>
-<name>dailychildcarereport.com Nap Scraper</name>
-<version>1.0</version>
-<versionId>{bfbf44b5-0d71-41f9-9fdb-d54daed18dc0}</versionId>
-<automatorType>scraper</automatorType>
-<kernelVersion>4.1.1.4</kernelVersion>
-<creationOutfit>OutWit Hub</creationOutfit>
-<author />
-<company />
-<created>2015-07-09T09:42:42-7:00</created>
-<lastModified>2015-07-09T09:42:42-7:00</lastModified>
-<comments />
-<options>{"source":"DOM"}</options><hash>tLpDYC/Gyc8a1NWSC3mqLQ==</hash>
-</documentproperties>
-<data>
-<line>
-<ok>true</ok>
-<description>Date</description>
-<before>&lt;span class="wide_element"&gt;</before>
-<after>&lt;/th&gt;</after>
-<format></format>
-<replace></replace>
-<separator></separator>
-<labels></labels>
-</line>
-<line>
-<ok>true</ok>
-<description>Sleep</description>
-<before>Sleeps</before>
-<after>Diaper changes</after>
-<format></format>
-<replace></replace>
-<separator></separator>
-<labels></labels>
-</line>
-</data>
-</outwitAutomator>
+library(httr)
+
+pg <- GET("https://www.dailychildcarereport.com",
+          authenticate("USERNAME","PASSWORD"))
 ```
-The output of the scraper includes columns for id and source_url. I remove these before exporting to CSV. There is no harm in including them, but you'll have to remove them with R if you don't find them useful. The CSV is saved as OutWit\/scraped\/export.csv.
+
+The script also requires you knowing how many pages of reports are available, so you can create handles for each. Below is an example (Note: ID in the path is your account ID): 
+
+```{r}
+reports1 <- GET(handle=pg,path="/minors/ID/all_reports?page=1")
+reports2 <- GET(handle=pg,path="/minors/ID/all_reports?page=2")
+```
+
+The __scrape.R__ script parses the content for each report identified in the __access.R__ (some modification necessary), converts each to a data frame, then binds them together.
+
+There's a little bit of cleaning before it gets to the __cleaning_script.R__ script because the parsed content is difficult to read. Finally it gets written to a csv file in the data folder.
 
 ## Getting tidy data from the OutWit Hub data
 
@@ -70,14 +46,22 @@ The __cleaning_script.R__ creates a tidy data set from the OutWit Hub CSV.
 
 More to come...
 
+## Variables in tidy data
+
+*__Date__: Date of the naps
+
+The day is broken into three groups: morning, midday, and afternoon. Morning is any time between 7 a.m. and 10 a.m. Midday is between 10 p.m. and 1 p.m. Afternoon is between 1 p.m. and 4 p.m. 
+
+*__morningstart__: Start of morning nap.
+*__morningend__: End of morning nap.
+*__middaystart__: Start of midday nap.
+*__middayend__: End of midday nap.
+*__afternoonstart__: Start of afternoon nap.
+*__afternoonend__: End of afternoon nap.
+
 ## Areas of improvement
 
 The complicated method of pulling data is a weak aspect of this script as it:
 
 * Limits access to data to members of a closed site.
-* Requires access to software other than R.
-* Free version of OutWit Hub restricts scraped content to 100 results.
-
-More issues
-
-* The __cleaning_script.R__ does not check for the data then download if it doesn't exist (see above). Potential solution is to host the data somewhere then update it frequently. But does anyone else care about _my kid's_ naps?
+* Requires knowledge of how many pages of reports are available, leading to modification of the __scrape.R__ script.
