@@ -1,5 +1,6 @@
 source("access.R")
 
+library(XML)
 library(dplyr)
 
 pull_report <- function(num) {
