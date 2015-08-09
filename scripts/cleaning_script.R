@@ -107,6 +107,8 @@ splitDF <- splitDF %>% mutate(`middaystart` = as.POSIXct(`middaystart`)) %>%
 splitDF <- splitDF %>% mutate(`afternoonstart` = as.POSIXct(`afternoonstart`)) %>% 
                        mutate(`afternoonend` = as.POSIXct(`afternoonend`))
 
+splitDF <- splitDF %>% mutate(location = "daycare")
+
 # tidydata
 
 tidydf <- splitDF
