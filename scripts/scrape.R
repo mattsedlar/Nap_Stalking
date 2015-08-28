@@ -36,12 +36,13 @@ report1 <- pull_report(reports1)
 report2 <- pull_report(reports2)
 report3 <- pull_report(reports3)
 report4 <- pull_report(reports4)
+report5 <- pull_report(reports5)
 
 # bind them all together in one data frame
-reports <- rbind(report1,report2,report3,report4)
+reports <- rbind(report1,report2,report3,report4,report5)
 
 # let's clean up the environment
-rm(report1,report2,report3,report4)
+rm(report1,report2,report3,report4,report5)
 
 # filter out the dates with no reports and order by date
 reports <- reports %>% 

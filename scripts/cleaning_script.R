@@ -19,7 +19,7 @@ while (x <= length(df$sleeps) ) {
   if (nchar(df$sleeps[x]) == lengths[2]) { 
     
     ## fix early naps, naps that sneak into morning column
-    if (temp_var == 8){
+    if (temp_var <= 9){
       df$sleeps[x] <- paste(df$sleeps[x],"; NA - NA")
     }
 
@@ -103,6 +103,10 @@ while (c <= 7) {
 
 # SECTION FOR HOME NAPS
 
+# let's check to see if it exists for people trying
+# to modify this for their own use (unlikely)
+
+if (exists("homenapsdf")) {
 # lowercase column names and remove period
 names(homenapsdf) <- tolower(names(homenapsdf))
 names(homenapsdf) <- gsub("\\.","",names(homenapsdf))
@@ -118,8 +122,9 @@ while (c <= 7) {
 }
 
 # combine both sets
-
 splitDF <- rbind(homenapsdf, splitDF)
+
+}
 
 # This sets up the dates for POSIX conversion 
 
